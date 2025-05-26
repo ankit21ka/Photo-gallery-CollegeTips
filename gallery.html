@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CollegeTips Photo Gallery</title>
+<style>
+
+  /* Google Fonts */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  
+  /* Root color variables */
+
+  :root {
+    --primary-color: #7f00ff;
+    --secondary-color: #e100ff;
+    --button-bg-start: #6a00ff;
+    --button-bg-end: #b300ff;
+    --button-hover-start: #b340ff;
+    --button-hover-end: #d52fff;
+    --filter-button-text: #fff;
+    --background-light: #130f40;
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --card-bg-hover: rgba(255, 255, 255, 0.15);
+    --shadow-glow: #9c27b0;
+  }
+
+  /* Reset */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0; 
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #130f40 0%, #2a076e 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  /* Background curve using SVG embedded */
+  .background-curves {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Container */
+  .gallery-container {
+    position: relative;
+    max-width: 1200px;
+    width: 100%;
+    z-index: 10;
+    backdrop-filter: saturate(180%) blur(12px);
+    background: rgba(0,0,0,0.3);
+    border-radius: 20px;
+    padding: 30px 30px 50px;
+    box-shadow: 0 0 25px rgba(147, 0, 255, 0.7);
+  }
+
+ /* Title */
+h1 {
+  text-align: center;
+  font-weight: 600;
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+  p.subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    color: #dcd6f7cc;
+  }
+
+  /* Filter Buttons */
+  .filter-buttons {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .filter-button {
+    margin: 0 12px 12px 12px;
+    padding: 12px 28px;
+    background: linear-gradient(45deg, var(--button-bg-start), var(--button-bg-end));
+    border: none;
+    border-radius: 40px;
+    color: var(--filter-button-text);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(171, 35, 255, 0.5);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    user-select: none;
+    outline-offset: 3px;
+  }
+
+  .filter-button:hover,
+  .filter-button:focus {
+    background: linear-gradient(45deg, var(--button-hover-start), var(--button-hover-end));
+    box-shadow: 0 6px 20px rgba(213, 47, 255, 0.8);
+    transform: scale(1.05);
+    outline: none;
+  }
+
+  .filter-button.active {
+    background: linear-gradient(45deg, var(--button-hover-start), var(--button-hover-end));
+    box-shadow: 0 6px 25px rgba(213, 47, 255, 0.95);
+  }
+
+  /* Gallery */
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .gallery-item {
+    flex: 1 1 calc(25% - 14px);
+    max-width: calc(25% - 14px);
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow:
+      0 8px 16px rgb(144 0 255 / 0.6),
+      0 0 8px rgb(147 0 255 / 0.3);
+    background: var(--card-bg);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 1024px) {
+    .gallery-item {
+      flex: 1 1 calc(33.333% - 14px);
+      max-width: calc(33.333% - 14px);
+    }
+  }
+  @media (max-width: 640px) {
+    .gallery-item {
+      flex: 1 1 calc(50% - 14px);
+      max-width: calc(50% - 14px);
+    }
+  }
+
+  @media (max-width: 400px) {
+    .gallery-item {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+  }
+
+  /* Image */
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+    filter: drop-shadow(0 0 1.5px #d900ff95);
+    transform-origin: center center;
+    transition: transform 0.4s ease, filter 0.35s ease;
+  }
+
+  .gallery-item:hover img,
+  .gallery-item:focus img {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px var(--shadow-glow));
+  }
+
+  /* Caption (on hover) */
+  .caption {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    color: white;
+    background: rgba(0,0,0,0.45);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 8px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .gallery-item:hover .caption,
+  .gallery-item:focus .caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Modal */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 0, 40, 0.95);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .modal.open {
+    display: flex;
+  }
+
+  .modal-content {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 32px 8px var(--shadow-glow);
+  }
+
+  .modal-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .modal-close {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    color: #e200ff;
+    font-size: 2.8rem;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 700;
+    transition: color 0.3s ease;
+    z-index: 1000;
+  }
+
+  .modal-close:hover {
+    color: #ff00ff;
+  }
+  
+</style>
+</head>
+<body>
+<!-- Background SVG Curves -->
+<svg class="background-curves" viewBox="0 0 1440 800" preserveAspectRatio="none" aria-hidden="true" >
+  <path fill="url(#grad1)" fill-opacity="0.2" 
+    d="M0,320L60,320C120,320,240,320,360,331.2C480,341,600,363,720,341.3C840,320,960,256,1080,234.7C1200,213,1320,235,1380,245.3L1440,256L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z">
+  </path>
+
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b3ff00a4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e100ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="gallery-container" role="region" aria-label="CollegeTips Photo Gallery">
+  <h1>CollegeTips Photo Gallery</h1>
+  <p class="subtitle">Vibe, Style, and Fun – Our coolest moments with serious flair 💃🎉</p>
+  <div class="filter-buttons" role="list" aria-label="Filter gallery categories">
+    <button class="filter-button active" data-filter="all" aria-pressed="true">All</button>
+    <button class="filter-button" data-filter="team" aria-pressed="false">Team Vibes 🤝</button>
+    <button class="filter-button" data-filter="creative" aria-pressed="false">Creative Campaigns 🎨</button>
+    <button class="filter-button" data-filter="work" aria-pressed="false">Work Hard, Play Hard 🥳</button>
+    <button class="filter-button" data-filter="behind" aria-pressed="false">Behind-The-Scenes 🎥</button>
+    <button class="filter-button" data-filter="events" aria-pressed="false">Events 🎉</button>
+    <button class="filter-button" data-filter="memorable" aria-pressed="false">Memorable Moments 📸</button>
+  </div>
+
+  <div class="gallery" role="list">
+    <!-- Team Vibes -->
+    <div class="gallery-item team" tabindex="0" role="listitem">
+      <img src="image1.png" alt="Happy College Team Vibes">
+      <div class="caption">Team Vibes: Happy College Team</div>
+    </div>
+
+    <div class="gallery-item team" tabindex="0" role="listitem">
+      <img src="image2.png" alt="Team collaborating on project">
+      <div class="caption">Team Vibes: Collaborating Creatively</div>
+    </div>
+
+    <!-- Creative Campaigns -->
+    <div class="gallery-item creative" tabindex="0" role="listitem">
+      <img src="image3.png" alt="CollegeTips creative campaign artwork">
+      <div class="caption">Creative Campaigns: Colorful Artwork</div>
+    </div>
+    <div class="gallery-item creative" tabindex="0" role="listitem">
+      <img src="image4.png" alt="Creative brainstorming session">
+      <div class="caption">Creative Campaigns: Brainstorming Session</div>
+    </div>
+
+    <!-- Work Hard, Play Hard -->
+    <div class="gallery-item work" tabindex="0" role="listitem">
+      <img src="image5.png" alt="Party and work balance">
+      <div class="caption">Work Hard, Play Hard: Celebrating Success</div>
+    </div>
+    <div class="gallery-item work" tabindex="0" role="listitem">
+      <img src="image11.png" alt="Students having fun at party">
+      <div class="caption">Work Hard, Play Hard: Party Time</div>
+    </div>
+
+    <!-- Behind-The-Scenes -->
+    <div class="gallery-item behind" tabindex="0" role="listitem">
+      <img src="image6.png" alt="Behind the scenes video shoot">
+      <div class="caption">Behind-The-Scenes: Video Shoot</div>
+    </div>
+    <div class="gallery-item behind" tabindex="0" role="listitem">
+      <img src="image7.png" alt="Team setting up event">
+      <div class="caption">Behind-The-Scenes: Event Setup</div>
+    </div>
+    <!-- Events -->
+    <div class="gallery-item events" tabindex="0" role="listitem">
+
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/2ska-JPZ8ns?si=QQ6CXWNPwezEj50y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+      <img src="image8.png" alt="College event crowd">
+      <div class="caption">Events: College Convention</div>
+    </div>
+    <div class="gallery-item events" tabindex="0" role="listitem">
+      <img src="image9.png" alt="Campus festival">
+      <div class="caption">Events: Campus Festival</div>
+    </div>
+
+    <!-- Memorable Moments -->
+    <div class="gallery-item memorable" tabindex="0" role="listitem">
+      <img src="image10.png" alt="Memorable moment of friends">
+      <div class="caption">Memorable Moments: Close Friends</div>
+    </div>
+    <div class="gallery-item memorable" tabindex="0" role="listitem">
+      <img src="ss.bmp" alt="Sunset college rooftop hangout">
+      <div class="caption">Memorable Moments: Sunset Hangout</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for fullscreen view -->
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-image-title" tabindex="-1">
+  <button class="modal-close" aria-label="Close gallery image">&times;</button>
+  <div class="modal-content">
+    <img src="" alt="" id="modal-image" />
+    <div id="modal-image-title" class="sr-only">Gallery image fullscreen view</div>
+  </div>
+</div>
+
+<script>
+
+  // Filter Buttons Logic
+  const filterButtons = document.querySelectorAll('.filter-button');
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      filterButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      });
+      button.classList.add('active');
+      button.setAttribute('aria-pressed', 'true');
+      const filter = button.getAttribute('data-filter');
+      galleryItems.forEach(item => {
+        if (filter === 'all' || item.classList.contains(filter)) {
+          item.style.display = 'block';
+          item.setAttribute('tabindex', '0');
+        } else {
+          item.style.display = 'none';
+          item.setAttribute('tabindex', '-1');
+        }
+      });
+    });
+  });
+
+  // Modal Logic for fullscreen images
+  const modal = document.querySelector('.modal');
+  const modalImage = document.getElementById('modal-image');
+  const modalClose = document.querySelector('.modal-close');
+  const gallery = document.querySelector('.gallery');
+  function openModal(imgSrc, altText) {
+    modalImage.src = imgSrc;
+    modalImage.alt = altText;
+    modal.classList.add('open');
+    modal.focus();
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    modalImage.src = '';
+    modalImage.alt = '';
+  }
+
+  // Event delegation for gallery clicks
+  gallery.addEventListener('click', e => {
+    const item = e.target.closest('.gallery-item');
+    if (!item) return;
+    const img = item.querySelector('img');
+    openModal(img.src, img.alt);
+  });
+
+  // Accessibility: open modal on Enter key when gallery item focused
+  gallery.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('gallery-item')) {
+      const img = e.target.querySelector('img');
+      openModal(img.src, img.alt);
+    }
+  });
+
+  // Close modal on close button click
+  modalClose.addEventListener('click', closeModal);
+
+  // Close modal when clicking outside image
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Close modal on Escape key
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) {
+      closeModal();
+    }
+  });
+
+</script>
+</body>
+</html>
